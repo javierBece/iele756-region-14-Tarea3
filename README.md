@@ -44,7 +44,7 @@ Mientras que los riesgos de salud pública (ENO) están estrechamente vinculados
 ## Estructura del Repositorio
 *   `Tarea3_Modelamiento_Espacial.ipynb`: Notebook principal con código, diagnósticos y mapas.
 *   `analytical_dataset_tarea3_vars.csv`: Conjunto de datos integrado utilizado para el modelamiento.
-*   `requirements.txt`: Librerias principales utilizadas en el proyecto.
+*   `requirements.txt`: Librerías principales utilizadas en el proyecto.
 *   `FAMILY.zip`: Archivo zip con los archivos CVs que son procesados dentro del proyecto.
 *   `Datasets/`: Carpeta con datos crudos/procesados y shapefiles. (muy extensa para ser subida)
 
