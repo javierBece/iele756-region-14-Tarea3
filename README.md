@@ -1,59 +1,70 @@
-# Análisis Integrado de Determinantes Sociales y Salud: Región Metropolitana (Chile)
+# Análisis Integrado de Determinantes Sociales y Salud: Región Metropolitana (Chile) 📊⚕️
 
-## Resumen del Proyecto
-Este proyecto representa la tercera etapa de una línea de investigación diseñada para comprender la relación entre los determinantes sociales y los resultados de salud pública en la Región Metropolitana de Santiago. Mediante la integración de datos microcensales del **Censo 2024**, registros epidemiológicos de **Enfermedades de Notificación Obligatoria (ENO)** y datos de egresos hospitalarios (**GRD**), modelamos cómo las vulnerabilidades territoriales —específicamente la educación y la migración— influyen en el riesgo de enfermedad y la gestión hospitalaria.
-
-El estudio se centra en tres comunas específicas: **La Granja, Macul y San Ramón**.
-
----
-
-## Conjuntos de Datos
-*   **Datos Demográficos:** Microdatos del Censo 2024 (Vivienda, Hogar, Persona).
-*   **Vigilancia Epidemiológica (ENO):** Registros de enfermedades de notificación obligatoria (2007–2024)[cite: 1].
-*   **Actividad Hospitalaria (GRD):** Registros de Grupos Relacionados por Diagnóstico, con foco en el promedio de días de estadía (Length of Stay - LOS)[cite: 1].
-*   **Datos Cartográficos:** Archivos Shapefile de las comunas de la Región Metropolitana.
+**Repositorio:** [iele756-region-14-Tarea3](https://github.com/javierBece/iele756-region-14-Tarea3)  
+**Asignatura:** IELE756 -- Preparación y Análisis de Datos  
+**Profesor:** Leo Ferres, PhD  
+**Integrantes:** Javier Becerra Muñoz, Jose Pino Muñoz (Grupo 1)  
+**Comunas Asignadas:** La Granja, Macul, San Ramón  
 
 ---
 
-## Metodologías Clave y Hallazgos
+## 🎯 Resumen del Proyecto
+Este es el proyecto analítico final del curso. El objetivo principal es vincular tres tablas maestras a nivel comunal de la Región Metropolitana (Censo 2024, registros de salud ENO y registros de egresos hospitalarios GRD) en un único dataset analítico. A partir de esto, modelamos cómo las vulnerabilidades territoriales —específicamente la educación y la migración— influyen en el riesgo de enfermedad y la gestión hospitalaria.
 
-### 1. Modelamiento Estadístico de Enfermedades (ENO)
-Implementamos una regresión cruzada para predecir el conteo de notificaciones ENO basado en la demografía comunal.
-*   **De Poisson a Binomial Negativa:** Los modelos iniciales de Poisson mostraron una sobredispersión masiva (Estadístico de dispersión: **251.62**), revelando un "espejismo de Poisson" donde variables como el desempleo parecían falsamente significativas.
-*   **Hallazgos Robustos:** El modelo Binomial Negativo corrigió estos errores, revelando que solo la **brecha de escolaridad** (`schooling_gap`, p=0.0027) es un predictor robusto del riesgo. La nacionalidad y el desempleo perdieron significancia tras ajustar la varianza.
-
-### 2. Modelamiento Lineal de Estadía Hospitalaria (GRD)
-Modelamos el promedio de días de estadía (`grd_mean_los`) mediante Mínimos Cuadrados Ordinarios (OLS).
-*   **Resultados:** El modelo arrojó un bajo **R-cuadrado de 0.089**, indicando que la demografía comunal explica menos del 10% de la duración de la estadía hospitalaria.
-*   **Diagnóstico:** Los residuos superaron las pruebas de normalidad (Jarque-Bera p = 0.82), confirmando que, aunque el modelo es estadísticamente válido, las variables clínicas (y no las demográficas) son las que realmente determinan la estadía.
-
-### 3. Análisis Espacial y de Residuos
-Utilizando **GeoPandas**, generamos visualizaciones territoriales para identificar desajustes entre el modelo y la realidad observada.
-*   **Tasas Predichas:** Mapas de coropletas que muestran la distribución esperada de ENO basada en niveles educativos.
-*   **Análisis de Residuos:** Identificamos a **San Pedro** como un valor atípico significativo (Residuo estandarizado: **8.52**), evidenciando el efecto de "vulnerabilidad por población pequeña", donde bajas poblaciones inflan artificialmente las tasas per cápita.
+## 🗂️ Preparación de Datos y Sanity Checks
+Se realizó un *pooling* de los datos de todos los equipos del curso. 
+*   **Limpieza de Datos:** Tras filtrar archivos malformados (Equipo 07) y anomalías estadísticas severas (como tasas de población extranjera lógicamente imposibles), consolidamos un dataset analítico final de **N = 45 comunas**.
+*   **Variables Derivadas:** Se calcularon indicadores clave como `log_pop_total`, `pct_unemployed` (corrigiendo la escala inversa a 100), `schooling_gap` (brecha educativa entre chilenos y extranjeros) y `age_gap`.
 
 ---
 
-## Síntesis Integrada
-El proyecto demuestra que la Región Metropolitana está profundamente fragmentada. El eje dominante de variación es la vulnerabilidad socioeconómica (educación) en lugar del tamaño poblacional.
+## 📈 Hallazgos Principales (Exploratory & Modeling)
 
-Mientras que los riesgos de salud pública (ENO) están estrechamente vinculados a las brechas educativas comunales, la dinámica hospitalaria (GRD) es mayormente independiente de la demografía del territorio. Esto sugiere que la **salud preventiva** debe ser focalizada territorialmente, mientras que la **gestión hospitalaria** actúa como un proceso clínico centralizado que trasciende las fronteras comunales.
+### 1. Análisis Exploratorio (Correlaciones y Outliers)
+La matriz de correlación reveló dinámicas territoriales importantes:
+*   Una correlación inversa contraintuitiva entre la **tasa de dependencia y el desempleo** (-0.51).
+*   Una relación positiva lógica entre los **egresos hospitalarios (GRD) y la dependencia** (0.42).
+*   Una correlación positiva entre la **población extranjera y la brecha de escolaridad** (0.38).
+
+En el análisis de dispersión, comunas como **San Pedro** (ENO) y **Renca, San Miguel y Peñalolén** (GRD) destacaron como *outliers* extremos, sugiriendo dinámicas no capturadas por la demografía pura.
+
+### 2. El "Espejismo de Poisson" y Modelamiento ENO
+Al modelar las Enfermedades de Notificación Obligatoria (ENO):
+*   Un modelo de regresión de Poisson ingenuo sugirió falsamente que la migración (`pct_foreign`) y el desempleo (`pct_unemployed`) eran predictores significativos.
+*   Sin embargo, se detectó una **sobredispersión masiva** (Estadístico: 251.62). 
+*   Al ajustar un **Modelo Binomial Negativo**, estas variables perdieron su significancia. El **Forest Plot** confirmó que la única variable sociodemográfica robusta para predecir el riesgo epidemiológico en la RM es la **brecha de escolaridad** (`schooling_gap`, p=0.0027).
+
+### 3. Modelamiento OLS Hospitalario (GRD)
+Modelamos el promedio de días de estadía hospitalaria (`grd_mean_los`) mediante regresión lineal múltiple (OLS).
+*   **Resultado:** El modelo arrojó un **$R^2$ de 0.089**, con ninguna covariable demográfica resultando estadísticamente significativa.
+*   **Conclusión:** La gestión de camas y la duración de la estadía en los hospitales responden a factores sistémicos y clínicos, siendo independientes del código postal o demografía de los pacientes.
 
 ---
 
-## Estructura del Repositorio
-*   `Tarea3_Modelamiento_Espacial.ipynb`: Notebook principal con código, diagnósticos y mapas.
-*   `analytical_dataset_tarea3_vars.csv`: Conjunto de datos integrado utilizado para el modelamiento.
-*   `requirements.txt`: Librerías principales utilizadas en el proyecto.
-*   `FAMILY.zip`: Archivo zip con los archivos CVs que son procesados dentro del proyecto.
-*   `Datasets/`: Carpeta con datos crudos/procesados y shapefiles. (muy extensa para ser subida)
-
-## Requisitos Técnicos
-*   **Lenguaje:** Python 3.13+
-*   **Librerías:** `pandas`, `statsmodels`, `geopandas`, `matplotlib`, `seaborn`.
+## 🗺️ Análisis Espacial (GeoPandas)
+Integramos datos espaciales para mapear el comportamiento del Modelo Binomial Negativo:
+*   **Tasas Predichas:** Se generó un mapa de coropletas ilustrando la tasa predicha de ENO a nivel espacial.
+*   **Análisis de Residuos:** Se generó un mapa de residuos estandarizados (Pearson). La comuna rural de **San Pedro** se reveló como el residuo positivo extremo (**8.52**), demostrando el efecto *Small-N sparsity*, donde un brote localizado en poblaciones muy pequeñas rompe las predicciones del modelo. **María Pinto** destacó como el residuo negativo extremo (**-1.24**).
 
 ---
 
-**Autores:** Jose Pino & Javier Becerra  
-**Curso:** Preparación y Análisis de Datos  
-**Fecha:** Mayo 2026
+## 📂 Estructura del Repositorio
+
+El repositorio está organizado de la siguiente manera:
+```text
+📦 iele756-region-14-Tarea3
+ ┣ 📂 Datasets
+ ┃ ┗ 📂 Mapa comuna            # Archivos cartográficos
+ ┃   ┣ 📜 comunas.shp          # Shapefile principal de las comunas RM
+ ┃   ┣ 📜 comunas.shx
+ ┃   ┣ 📜 comunas.dbf
+ ┃   ┗ 📜 comunas.prj
+ ┣ 📂 shared_data              # Directorio con los CSVs extraídos de todos los grupos
+ ┃ ┣ 📂 team01
+ ┃ ┣ 📂 team02
+ ┃ ┗ 📜 ... (21 carpetas por equipo con datos Censo, ENO, GRD)
+ ┣ 📜 Tarea3.ipynb             # Notebook principal con el análisis, modelos y mapas
+ ┣ 📜 analytical_dataset_tarea3_vars.csv # Dataset final consolidado y limpio (N=45)
+ ┣ 📜 requirements.txt         # Lista de dependencias y librerías de Python
+ ┣ 📜 README.md                # Este archivo de documentación
+ ┗ 📜 FAMILY.zip               # Archivo comprimido original con los datos del curso
